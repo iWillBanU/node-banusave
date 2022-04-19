@@ -8,8 +8,11 @@ Encoder and decoder for BanUSave, the save fie format used by iWIllBanU's games.
 // CommonJS
 const banusave = require("banusave");
 
-// ESM/TypeScript
+// ESM
 import banusave from "banusave";
+
+// TypeScript
+import * as banusave from "banusave";
 ```
 
 ### Encode JSON data
