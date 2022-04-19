@@ -190,14 +190,3 @@ function decode(buffer) {
 }
 
 module.exports = {encode, decode};
-
-const data = {
-    "name": "John Doe",
-    "age": 42,
-    "address": {
-        "street": "123 Main St",
-        "city": "Anytown",
-        "state": "CA"
-    }
-};
-console.log(encode(data));
