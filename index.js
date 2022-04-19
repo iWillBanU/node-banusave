@@ -73,6 +73,7 @@ function encodeObject(object) {
  * Encodes an array
  * @param {JSONValue[]} array The array to decode
  * @returns {Buffer} The encoded array
+ * @private
  */
 function encodeArray(array) {
     let data = Buffer.alloc(0);
@@ -84,6 +85,7 @@ function encodeArray(array) {
  * Decodes a value
  * @param {Buffer} data The data to decode
  * @returns {[JSONValue, number]} The decoded value and its length
+ * @private
  */
 function decodeValue(data) {
     let decoded;
@@ -131,6 +133,7 @@ function decodeValue(data) {
  * Decodes an array
  * @param {Buffer} data The data to decode
  * @returns {[JSONValue[], number]} The decoded array and its length
+ * @private
  */
 function decodeArray(data) {
     let array = [];
@@ -150,6 +153,7 @@ function decodeArray(data) {
  * Decodes an object
  * @param {Buffer} data The data to decode
  * @returns {[{[p: string]: JSONValue}, number]} The decoded object and its length
+ * @private
  */
 function decodeObject(data) {
     let object = {};
