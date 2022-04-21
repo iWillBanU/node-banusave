@@ -139,13 +139,10 @@ function decodeArray(data) {
     let array = [];
     let offset = 0;
     while (data.readUint8(offset) !== 0x00) {
-        console.log(offset, data.readUint8(offset).toString(16));
         const [value, length] = decodeValue(data.slice(offset));
         array.push(value);
-        console.log(value, length);
         offset += length;
     }
-    console.log(offset, data.readUint8(offset).toString(16));
     return [array, offset + 2];
 }
 
@@ -166,7 +163,6 @@ function decodeObject(data) {
         const [value, valueLength] = decodeValue(data.slice(offset));
         object[key.toString()] = value;
         offset += valueLength;
-        console.log(valueLength, offset);
     }
     return [object, offset + 2];
 }
