@@ -1,5 +1,5 @@
 # node-banusave
-Encoder and decoder for BanUSave, the save fie format used by iWIllBanU's games.
+Encoder and decoder for BanUSave, the save fie format used by iWillBanU's games.
 
 ## Usage
 
