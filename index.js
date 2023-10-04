@@ -3,6 +3,7 @@
  * @typedef {null | boolean | bigint | number | string | JSONValue[] | {[p: string]: JSONValue}} JSONValue
  */
 
+const assert = require("assert");
 const crypto = require("crypto");
 
 /**
@@ -110,17 +111,17 @@ function decodeValue(data) {
             break;
         case 0x30:
             decoded = Buffer.alloc(0);
-            for (length = 1; data.readUint8(length) !== 0x00; length++) decoded = Buffer.concat([decoded, data.slice(length, length + 1)]);
+            for (length = 1; data.readUint8(length) !== 0x00; length++) decoded = Buffer.concat([decoded, data.subarray(length, length + 1)]);
             decoded = decoded.toString();
             length++;
             break;
         case 0x40:
-            let array = decodeArray(data.slice(1));
+            let array = decodeArray(data.subarray(1));
             decoded = array[0];
             length = array[1];
             break;
         case 0x50:
-            let object = decodeObject(data.slice(1));
+            let object = decodeObject(data.subarray(1));
             decoded = object[0];
             length = object[1];
             break;
@@ -139,7 +140,7 @@ function decodeArray(data) {
     let array = [];
     let offset = 0;
     while (data.readUint8(offset) !== 0x00) {
-        const [value, length] = decodeValue(data.slice(offset));
+        const [value, length] = decodeValue(data.subarray(offset));
         array.push(value);
         offset += length;
     }
@@ -158,9 +159,9 @@ function decodeObject(data) {
     while (data.readUint8(offset) !== 0x00) {
         let key = Buffer.alloc(0);
         let keyLength = 0;
-        for (; data.readUint8(offset + keyLength) !== 0x00; keyLength++) key = Buffer.concat([key, data.slice(offset + keyLength, offset + keyLength + 1)]);
+        for (; data.readUint8(offset + keyLength) !== 0x00; keyLength++) key = Buffer.concat([key, data.subarray(offset + keyLength, offset + keyLength + 1)]);
         offset += keyLength + 1;
-        const [value, valueLength] = decodeValue(data.slice(offset));
+        const [value, valueLength] = decodeValue(data.subarray(offset));
         object[key.toString()] = value;
         offset += valueLength;
     }
@@ -170,23 +171,27 @@ function decodeObject(data) {
 /**
  * Encodes a JSON value into the BanUSave format.
  * @param {JSONValue} object The JSON value to encode.
+ * @param {string} game A game ID.
  * @returns {Buffer} The encoded BanUSave format.
  */
-function encode(object) {
-    let body = encodeValue(object);
-    return Buffer.concat([Buffer.from("BANUSAVE"), body, crypto.createHash("sha256").update(body).digest()]);
+function encode(object, game) {
+    assert(typeof game === "string", "Invalid game");
+    let body = Buffer.concat([Buffer.from(game), Buffer.from([0x00]), encodeValue(object)]);
+    return Buffer.concat([Buffer.from("BANUSAVE2"), body, crypto.createHash("sha256").update(body).digest()]);
 }
 
 /**
  * Decodes the BanUSave format into a JSON value.
  * @param {Buffer} buffer The BanUSave format to decode.
- * @returns {JSONValue} The decoded JSON value.
+ * @returns {[JSONValue, string]} The decoded JSON value, followed by the game ID.
  */
 function decode(buffer) {
-    if (buffer.length < 41) throw new Error("Invalid buffer length");
-    if (buffer.slice(0, 8).toString() !== "BANUSAVE") throw new Error("Invalid buffer header");
-    if (crypto.createHash("sha256").update(buffer.slice(8, buffer.length - 32)).digest().toString() !== buffer.slice(buffer.length - 32).toString()) throw new Error("Invalid buffer checksum");
-    return decodeValue(buffer.slice(8, buffer.length - 32))[0];
+    if (buffer.length < 43) throw new Error("Invalid buffer length");
+    if (buffer.subarray(0, 9).toString() !== "BANUSAVE2") throw new Error("Invalid buffer header");
+    if (crypto.createHash("sha256").update(buffer.subarray(9, buffer.length - 32)).digest().toString() !== buffer.subarray(buffer.length - 32).toString()) throw new Error("Invalid buffer checksum");
+    let game = Buffer.alloc(0);
+    for (let i = 9; buffer.readUint8(i) !== 0x00; i++) game = Buffer.concat([game, buffer.subarray(i, i + 1)]);
+    return [decodeValue(buffer.subarray(10 + game.length, buffer.length - 32))[0], game.toString()];
 }
 
 module.exports = {encode, decode};
