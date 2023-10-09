@@ -32,13 +32,13 @@ console.log(encoded);
 // <Buffer 42 41 4e 55 53 41 56 45...>
 
 // Write it to a file
-fs.writeFileSync("save.bsve", encoded);
+fs.writeFileSync("save.bsve2", encoded);
 ```
 
 ### Decode BanUSave data
 ```javascript
 // Read the file data
-const encoded = fs.readFileSync("save.bsve");
+const encoded = fs.readFileSync("save.bsve2");
 
 const decoded = banusave.decode(encoded);
 console.log(decoded);
